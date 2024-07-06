@@ -1,11 +1,20 @@
 var numSelected = null;
 var tileSelected = null;
+var digitsLeft;
 
 var BOARD_SIZE = 9;
 var BOX_SIZE = 3;
 
 window.onload = function() {
     setGame();
+
+    // Delete later
+    const newGameTempBtn = document.getElementById('temp'); 
+    newGameTempBtn.addEventListener('click', function() {
+        newBoard(1);
+    });
+
+
     const newGameEasyBtn = document.getElementById('easy');
     const newGameMediumBtn = document.getElementById('medium');
     const newGameHardBtn = document.getElementById('hard');
@@ -17,6 +26,15 @@ window.onload = function() {
     });
     newGameHardBtn.addEventListener('click', function() {
         newBoard(Math.floor(Math.random() * 5 + 1) + 55);
+    });
+
+    // Close popup window
+    const popup = document.querySelector('.popup');
+    const closeButton = document.querySelector('.close');
+    const myPopup = document.querySelector('.popup'); 
+
+    closeButton.addEventListener('click', function() {
+        myPopup.classList.remove("show");
     });
 }
 
@@ -41,10 +59,6 @@ function setGame() {
         for(let c = 0; c < BOARD_SIZE; c++) {
             let tile = document.createElement("div");
             tile.id = r.toString() + ":" + c.toString();
-            if(board[r][c] != "-") {
-                tile.innerText = board[r][c];
-                tile.classList.add("start-tile");
-            }
 
             if(r == 2 || r == 5) {
                 tile.classList.add("horizontal-line");
@@ -78,6 +92,14 @@ function newBoard(removedDigits) {
             }
         }
     }
+
+    // Add event listener to check when digitsLeft equals zero
+    digitsLeft = removedDigits;
+    const popup = document.querySelector('.popup');
+    const closeButton = document.querySelector('.close');
+    document.addEventListener('digitsLeftZero', function() {
+        popup.classList.add("show");
+    });
 }
 
 function selectNumber() {
@@ -105,6 +127,12 @@ function selectTile() {
 
         if(solution[r][c] == numSelected.id) {
             this.innerText = numSelected.id
+            digitsLeft--;
+
+            // Check if digitsLeft equals zero
+            if(digitsLeft === 0) {
+                document.dispatchEvent(new Event('digitsLeftZero'));
+            }
         }
     }
 }
