@@ -6,8 +6,18 @@ var BOX_SIZE = 3;
 
 window.onload = function() {
     setGame();
-    const newGameBtn = document.getElementById('new-game');
-    newGameBtn.addEventListener('click', newBoard);
+    const newGameEasyBtn = document.getElementById('easy');
+    const newGameMediumBtn = document.getElementById('medium');
+    const newGameHardBtn = document.getElementById('hard');
+    newGameEasyBtn.addEventListener('click', function() {
+        newBoard(Math.floor(Math.random() * 8 + 1) + 35);
+    });
+    newGameMediumBtn.addEventListener('click', function() {
+        newBoard(Math.floor(Math.random() * 8 + 1) + 45);
+    });
+    newGameHardBtn.addEventListener('click', function() {
+        newBoard(Math.floor(Math.random() * 5 + 1) + 55);
+    });
 }
 
 function setGame() {
@@ -50,9 +60,9 @@ function setGame() {
     }
 }
 
-function newBoard() {
+function newBoard(removedDigits) {
     // Generate board
-    let sudoku = new Sudoku(40)
+    let sudoku = new Sudoku(removedDigits)
     solution = sudoku.solution;
     board = sudoku.board;
 
