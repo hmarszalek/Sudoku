@@ -1,6 +1,7 @@
 var numSelected = null;
 var tileSelected = null;
 var digitsLeft;
+var startTime;
 
 var BOARD_SIZE = 9;
 var BOX_SIZE = 3;
@@ -48,7 +49,7 @@ function setGame() {
         number.id = i
         number.innerText = i;
         number.addEventListener("click", selectNumber);
-        number.classList.add("number", "prevent-select");
+        number.classList.add("number", "prevent-text-select");
         document.getElementById("digits").appendChild(number);
     }
 
@@ -66,7 +67,7 @@ function setGame() {
             }
 
             tile.addEventListener("click", selectTile);
-            tile.classList.add("tile", "prevent-select");
+            tile.classList.add("tile", "prevent-text-select");
             document.getElementById("board").appendChild(tile);
         }
     }
@@ -79,6 +80,13 @@ function newBoard(removedDigits) {
     board = sudoku.board;
     
     deselectAll();
+
+    // Set the game timer
+    startTime = new Date().getTime();
+    var timePlayed = setInterval(function() {
+        setTimer();
+    }
+    );
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -96,29 +104,57 @@ function newBoard(removedDigits) {
     // Add event listener to check when digitsLeft equals zero
     digitsLeft = removedDigits;
     const popup = document.querySelector('.popup');
-    document.addEventListener('digitsLeftZero', function() {
+    document.addEventListener('gameWon', function() {
+        clearInterval(timePlayed); // Stop the clock
+        popup.querySelector('.time-played').innerText = "Time played: " + document.getElementById("clock").innerText;
         popup.classList.add("show");
         deselectAll();
     });
 }
 
 function deselectAll() {
-    numSelected.classList.remove("number-selected");
-    numSelected = null;
-    // later deselect tile also
+    if(numSelected != null) {
+        numSelected.classList.remove("number-selected");
+        numSelected = null;
+    }
+    if(tileSelected != null) {
+        tileSelected.classList.remove("tile-selected");
+        tileSelected = null;
+    }
 }
 
 function selectNumber() {
-    if(numSelected != null) {
-        numSelected.classList.remove("number-selected");
-        if(numSelected == this) {
-            numSelected = null;
+    if(tileSelected) {
+        if(tileSelected.innerText != "") {
             return;
         }
-    }
 
-    numSelected = this;
-    numSelected.classList.add("number-selected");
+        let coords = tileSelected.id.split(":");
+        let r = parseInt(coords[0]);
+        let c = parseInt(coords[1]);
+
+        if(solution[r][c] == this.id) {
+            tileSelected.innerText = this.id
+            digitsLeft--;
+
+            // Check if digitsLeft equals zero
+            if(digitsLeft === 0) {
+                document.dispatchEvent(new Event('gameWon'));
+            }
+        }
+    }
+    else {
+        if(numSelected != null) {
+            numSelected.classList.remove("number-selected");
+            if(numSelected == this) {
+                numSelected = null;
+                return;
+            }
+        }
+
+        numSelected = this;
+        numSelected.classList.add("number-selected");
+    }
 }
 
 function selectTile() {
@@ -137,9 +173,24 @@ function selectTile() {
 
             // Check if digitsLeft equals zero
             if(digitsLeft === 0) {
-                document.dispatchEvent(new Event('digitsLeftZero'));
+                document.dispatchEvent(new Event('gameWon'));
             }
         }
+    } else {
+        if(this.classList.contains("start-tile")) {
+            return;
+        }
+
+        if(tileSelected != null) {
+            tileSelected.classList.remove("tile-selected");
+            if(tileSelected == this) {
+                tileSelected = null;
+                return;
+            }
+        }
+
+        tileSelected = this;
+        tileSelected.classList.add("tile-selected");
     }
 }
 
@@ -274,4 +325,26 @@ class Sudoku {
 
         return;
     }
+}
+
+function setTimer() {
+    var now = new Date().getTime();
+    var distance = now - startTime;
+    
+    // Time calculations for days, hours, minutes and seconds
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  
+    if(seconds < 10)
+        seconds = "0" + seconds;
+    if(minutes < 10)
+        minutes = "0" + minutes;
+    
+    // Output the result in an element with id="demo"
+    if(hours > 0) {
+        document.getElementById("clock").innerHTML = hours + ":" + minutes + ":" + seconds;
+    } else {
+        document.getElementById("clock").innerHTML = minutes + ":" + seconds;
+  }
 }
