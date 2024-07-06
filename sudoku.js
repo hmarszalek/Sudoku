@@ -6,6 +6,8 @@ var BOX_SIZE = 3;
 
 window.onload = function() {
     setGame();
+    const newGameBtn = document.getElementById('new-game');
+    newGameBtn.addEventListener('click', newBoard);
 }
 
 function setGame() {
@@ -44,6 +46,26 @@ function setGame() {
             tile.addEventListener("click", selectTile);
             tile.classList.add("tile");
             document.getElementById("board").appendChild(tile);
+        }
+    }
+}
+
+function newBoard() {
+    // Generate board
+    let sudoku = new Sudoku(40)
+    solution = sudoku.solution;
+    board = sudoku.board;
+
+    // Board
+    for(let r = 0; r < BOARD_SIZE; r++) {
+        for(let c = 0; c < BOARD_SIZE; c++) {
+            let tile = document.getElementById(r.toString() + ":" + c.toString());
+            tile.innerText = "";
+            tile.classList.remove("start-tile");
+            if(board[r][c] != "-") {
+                tile.innerText = board[r][c];
+                tile.classList.add("start-tile");
+            }
         }
     }
 }
