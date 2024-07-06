@@ -41,4 +41,26 @@ function setGame() {
         number.classList.add("number");
         document.getElementById("digits").appendChild(number);
     }
+
+    // Board
+    for(let r = 0; r < BOARD_SIZE; r++) {
+        for(let c = 0; c < BOARD_SIZE; c++) {
+            let tile = document.createElement("div");
+            tile.id = r.toString() + ":" + c.toString();
+            if(board[r][c] != "-") {
+                tile.innerText = board[r][c];
+                tile.classList.add("start-tile");
+            }
+
+            if(r == 2 || r == 5) {
+                tile.classList.add("horizontal-line");
+            }
+            if(c == 2 || c == 5) {
+                tile.classList.add("vertical-line");
+            }
+
+            tile.classList.add("tile");
+            document.getElementById("board").appendChild(tile);
+        }
+    }
 }
