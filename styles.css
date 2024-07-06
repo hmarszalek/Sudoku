@@ -30,3 +30,17 @@ body {
     
     background-color: bisque;
 }
+
+.number {
+    width: 45px;
+    height: 45px;
+    border: 1px solid black;
+    margin: 2px;
+
+    background-color: lightgray;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
