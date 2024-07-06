@@ -13,8 +13,6 @@ body {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     grid-gap: 0;
-    
-    background-color: bisque;
 }
 
 .tile {
@@ -44,8 +42,6 @@ body {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
     grid-gap: 0;
-    
-    background-color: bisque;
 }
 
 .number {
@@ -60,6 +56,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.number-selected {
+    background-color: gray;
 }
 
 .horizontal-line {
