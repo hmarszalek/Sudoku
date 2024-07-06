@@ -29,10 +29,8 @@ window.onload = function() {
     });
 
     // Close popup window
-    const popup = document.querySelector('.popup');
     const closeButton = document.querySelector('.close');
     const myPopup = document.querySelector('.popup'); 
-
     closeButton.addEventListener('click', function() {
         myPopup.classList.remove("show");
     });
@@ -50,7 +48,7 @@ function setGame() {
         number.id = i
         number.innerText = i;
         number.addEventListener("click", selectNumber);
-        number.classList.add("number");
+        number.classList.add("number", "prevent-select");
         document.getElementById("digits").appendChild(number);
     }
 
@@ -68,7 +66,7 @@ function setGame() {
             }
 
             tile.addEventListener("click", selectTile);
-            tile.classList.add("tile");
+            tile.classList.add("tile", "prevent-select");
             document.getElementById("board").appendChild(tile);
         }
     }
@@ -79,6 +77,8 @@ function newBoard(removedDigits) {
     let sudoku = new Sudoku(removedDigits)
     solution = sudoku.solution;
     board = sudoku.board;
+    
+    deselectAll();
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -96,10 +96,16 @@ function newBoard(removedDigits) {
     // Add event listener to check when digitsLeft equals zero
     digitsLeft = removedDigits;
     const popup = document.querySelector('.popup');
-    const closeButton = document.querySelector('.close');
     document.addEventListener('digitsLeftZero', function() {
         popup.classList.add("show");
+        deselectAll();
     });
+}
+
+function deselectAll() {
+    numSelected.classList.remove("number-selected");
+    numSelected = null;
+    // later deselect tile also
 }
 
 function selectNumber() {
