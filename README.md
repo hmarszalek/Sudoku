@@ -14,7 +14,7 @@ Fill in the missing numbers in the Sudoku grid to solve the puzzle.
 
 ### Rules
 
--   The game is played on a 9x9 grid, divided into nine 3x3 sub-grids or "regions."
+-   The game is played on a 9x9 grid, divided into nine 3x3 boxes.
 -   Some numbers are already filled in, while others are blank.
 -   The objective is to fill in all the blank cells with numbers from 1 to 9, such that each row, column, and region contains each number exactly once.
 
@@ -56,9 +56,3 @@ The timer is displayed in the top-right corner of the window. It starts when you
 ### Popup Window
 
 When you win, a popup window will appear displaying your time played.
-
-## Credits
-
----
-
-This Sudoku game was built by [Your Name] using JavaScript, HTML/CSS.
