@@ -58,14 +58,12 @@ function setGame() {
         for(let c = 0; c < BOARD_SIZE; c++) {
             let tile = document.createElement("div");
             tile.id = r.toString() + ":" + c.toString();
-
             if(r == 2 || r == 5) {
                 tile.classList.add("horizontal-line");
             }
             if(c == 2 || c == 5) {
                 tile.classList.add("vertical-line");
             }
-
             tile.addEventListener("click", selectTile);
             tile.classList.add("tile", "prevent-text-select");
             document.getElementById("board").appendChild(tile);
@@ -94,7 +92,7 @@ function newBoard(removedDigits) {
             let tile = document.getElementById(r.toString() + ":" + c.toString());
             tile.innerText = "";
             tile.classList.remove("start-tile");
-            if(board[r][c] != "-") {
+            if(board[r][c] != 0) {
                 tile.innerText = board[r][c];
                 tile.classList.add("start-tile");
             }
@@ -125,7 +123,7 @@ function deselectAll() {
 
 function selectNumber() {
     if(tileSelected) {
-        if(tileSelected.innerText != "") {
+        if(tileSelected.classList.contains("start-tile")) {
             return;
         }
 
@@ -133,13 +131,25 @@ function selectNumber() {
         let r = parseInt(coords[0]);
         let c = parseInt(coords[1]);
 
-        if(solution[r][c] == this.id) {
-            tileSelected.innerText = this.id
-            digitsLeft--;
-
+        if(tileSelected.innerText === this.id) {
+            // remove the same digit
+            board[r][c] = 0;
+            tileSelected.innerText = "";
+            digitsLeft++;
+        }
+        else {
+            // add new digit
+            if(tileSelected.innerText === "") {
+                digitsLeft--;
+            }
+    
+            tileSelected.innerText = this.id;
+            board[r][c] = parseInt(this.id);
+    
+    
             // Check if digitsLeft equals zero
             if(digitsLeft === 0) {
-                document.dispatchEvent(new Event('gameWon'));
+                boardFilledUp();
             }
         }
     }
@@ -159,7 +169,7 @@ function selectNumber() {
 
 function selectTile() {
     if(numSelected) {
-        if(this.innerText != "") {
+        if(this.classList.contains("start-tile")) {
             return;
         }
 
@@ -167,13 +177,24 @@ function selectTile() {
         let r = parseInt(coords[0]);
         let c = parseInt(coords[1]);
 
-        if(solution[r][c] == numSelected.id) {
-            this.innerText = numSelected.id
-            digitsLeft--;
-
+        if(this.innerText === numSelected.id) {
+            // remove the same digit
+            board[r][c] = 0;
+            this.innerText = "";
+            digitsLeft++;
+        }
+        else {
+            // add new digit
+            if(this.innerText === "") {
+                digitsLeft--;
+            }
+    
+            this.innerText = numSelected.id;
+            board[r][c] = parseInt(numSelected.id);
+    
             // Check if digitsLeft equals zero
             if(digitsLeft === 0) {
-                document.dispatchEvent(new Event('gameWon'));
+                boardFilledUp();
             }
         }
     } else {
@@ -194,6 +215,18 @@ function selectTile() {
     }
 }
 
+function boardFilledUp() {
+    const solutionNumbers = solution.map(row => row.split('').map(Number));
+    for (let i = 0; i < BOARD_SIZE; i++) {
+        for (let j = 0; j < BOARD_SIZE; j++) {
+            if (board[i][j] !== solutionNumbers[i][j]) {
+                console.log(`Mismatch at row ${i}, col ${j}: board=${board[i][j]}, solution=${solutionNumbers[i][j]}`);
+                return;
+            }
+        }
+    }
+    document.dispatchEvent(new Event('gameWon'));
+}
 
 class Sudoku {
     constructor(removedDigits) {
@@ -309,7 +342,7 @@ class Sudoku {
         );
     }
 
-    // Remove given nomber of digits
+    // Remove given number of digits
     removeDigits() {
         let count = this.removedDigits;
 
@@ -317,14 +350,76 @@ class Sudoku {
             // extract coordinates i and j
             let row = Math.floor(Math.random() * BOARD_SIZE);
             let col = Math.floor(Math.random() * BOARD_SIZE);
-            if (this.board[row][col] !== '-') {
-                this.board[row][col] = '-';
-                count--;
+            if (this.board[row][col] !== 0) {
+                let temp = this.board[row][col];
+                this.board[row][col] = 0;
+                if (this.isUniquelySolvable(this.board)) {
+                    count--;
+                } else {
+                    this.board[row][col] = temp;
+                }
             }
         }
 
         return;
     }
+
+    isUniquelySolvable(board) {
+        let solutions = 0;
+        let tempBoard = board.map(row => row.slice()); // Create a copy of the board
+    
+        function solveBoard() {
+            for (let i = 0; i < 81; i++) {
+                let row = Math.floor(i / 9);
+                let col = i % 9;
+                if (tempBoard[row][col] == 0) {
+                    for (let value = 1; value <= 9; value++) {
+                        if (isValidNumber(row, col, value)) {
+                            tempBoard[row][col] = value;
+                            solveBoard();
+                            tempBoard[row][col] = 0;
+                        }
+                    }
+                    return;
+                }
+            }
+            solutions++;
+        }
+    
+        // fix outside isValidNumber to take a board as an argument
+        function isValidNumber(row, col, num) {
+            // Check the row
+            for (let i = 0; i < 9; i++) {
+                if (tempBoard[row][i] == num) {
+                    return false;
+                }
+            }
+    
+            // Check the column
+            for (let i = 0; i < 9; i++) {
+                if (tempBoard[i][col] == num) {
+                    return false;
+                }
+            }
+    
+            // Check the box
+            let boxRow = Math.floor(row / 3) * 3;
+            let boxCol = Math.floor(col / 3) * 3;
+            for (let i = 0; i < 3; i++) {
+                for (let j = 0; j < 3; j++) {
+                    if (tempBoard[boxRow + i][boxCol + j] == num) {
+                        return false;
+                    }
+                }
+            }
+    
+            return true;
+        }
+    
+        solveBoard();
+        return solutions == 1;
+    }
+    
 }
 
 function setTimer() {
