@@ -36,6 +36,11 @@ window.onload = function() {
         // newGame(Math.floor(Math.random() * 5 + 1) + 55);
     });
 
+    // Toggle menu button
+    document.getElementById('options-toggle').addEventListener('click', function() {
+        document.getElementById('options').classList.toggle('open');
+    });
+
     // Pause game
     const pauseButton = document.getElementById('pause-btn');
     pauseButton.addEventListener('click', function() {
@@ -148,7 +153,6 @@ function selectTile() {
     if(isGamePaused || this.classList.contains("start-tile")) {
         return;
     }
-
     if(numSelected) {
         actionChosen(numSelected.id, this);
     } else {
@@ -160,7 +164,6 @@ document.addEventListener('keydown', function(event) {
     if(isGamePaused) {
         return;
     }
-
     let digit = parseInt(event.key);
     if (digit >= 1 && digit <= 9) {
         if (tileSelected && !numSelected) {
@@ -179,7 +182,6 @@ function selectNewTile(tile) {
             return;
         }
     }
-
     tileSelected = tile;
     tileSelected.classList.add("tile-selected");
 }
@@ -323,6 +325,7 @@ function pauseGame() {
         return;
     }
     isGamePaused = true;
+    deselectAll();  // Deselect selected elements
     pauseTimer();
     pauseGameIcons();
 }

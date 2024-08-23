@@ -1,47 +1,57 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width initial-scale=1.0 user-scalable=no">
-        <title>Sudoku</title>
-        
-        <link rel="stylesheet" href="styles.css">
-        <link rel="icon" href="icon/favicon-16x16.png">
-        <script src="script.js"></script>
-    </head>
 
-    <body>
-        <div class="container">
-            <div id="sudoku-board" class="prevent-text-select">
-                <h1>Sudoku</h1>
-                <div id="board"></div>
-                <br>
-                <div id="digits"></div>
-            </div>
-            <div id="options" class="prevent-text-select">
-                <div id="clock-container" class="prevent-text-select">
-                    <div id="clock-box">
-                        <span id="clock">00:00</span>
-                    </div>
-                    <button id="pause-btn" class="resumed" aria-label="Pause game">
-                        <img id="pause-icon" src="images/pause.png" alt="Pause" id="pause-icon">
-                        <img class="resumed" id="play-icon" src="images/play.png" alt="Resume" id="play-icon">
-                    </button>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width initial-scale=1.0 user-scalable=no">
+    <title>Sudoku</title>
+
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon/favicon-16x16.png">
+    <script src="script.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div id="sudoku-board" class="prevent-text-select">
+            <h1>Sudoku</h1>
+            <div id="board"></div>
+            <br>
+            <div id="digits"></div>
+        </div>
+
+        <button id="options-toggle" aria-label="Open options menu">
+            <img id="menu-icon" src="images/menu.png" alt="Menu">
+        </button>
+
+        <div id="options" class="prevent-text-select">
+            <!-- <button id="options-toggle" aria-label="Close options menu">
+                <img id="close-icon" src="images/close.png" alt="Close">
+            </button> -->
+            <div id="clock-container" class="prevent-text-select">
+                <div id="clock-box">
+                    <span id="clock">00:00</span>
                 </div>
-                <h2>Game Options</h2>
-                <button class="new-game-btn" id="temp">Temp</button>
-                <button class="new-game-btn" id="easy">Easy</button>
-                <button class="new-game-btn" id="medium">Medium</button>
-                <button class="new-game-btn" id="hard">Hard</button>
+                <button id="pause-btn" class="resumed" aria-label="Pause game">
+                    <img id="pause-icon" src="images/pause.png" alt="Pause">
+                    <img class="resumed" id="play-icon" src="images/play.png" alt="Resume">
+                </button>
             </div>
+            <h2>Game Options</h2>
+            <button class="new-game-btn" id="easy">Easy</button>
+            <button class="new-game-btn" id="medium">Medium</button>
+            <button class="new-game-btn" id="hard">Hard</button>
+            <button class="new-game-btn" id="temp">Temp</button>
         </div>
-        <div id="myPopup" class="popup">
-            <div class="popup-content">
-                <span class="close">&times;</span>
-                <h1 style="color: green">You Won!</h1>
-                <p>Congratulation!</p>
-                <span class="time-played"></span>
-            </div>
+    </div>
+    <div id="myPopup" class="popup">
+        <div class="popup-content">
+            <span class="close">&times;</span>
+            <h1 style="color: green">You Won!</h1>
+            <p>Congratulation!</p>
+            <span class="time-played"></span>
         </div>
-    </body>
+    </div>
+</body>
+
 </html>
