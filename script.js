@@ -100,8 +100,6 @@ function newGame(removedDigits) {
     board = sudoku.board;
     
     deselectAll();  // Deselect selected elements
-    if(isGamePaused)
-        resumeGame(); // Unpause the game if ended paused
     resetTimer(); // Set the game timer
 
     // Board
@@ -273,6 +271,9 @@ function setTimer() {
 
 function resetTimer() {
     isGameOver = false;
+    if(isGamePaused) {
+        resumeGame(); // Unpause the game if ended paused
+    }
     document.getElementById("clock").innerHTML = "00:00";
     clearInterval(timePlayed); // Stop the previous timer
     startTime = new Date().getTime(); // Reset the start time
