@@ -3,6 +3,7 @@ var tileSelected = null;
 var digitsLeft;
 var startTime;
 var isGamePaused = false;
+var isGameOver = true;
 var timePlayed;
 var pauseTime = 0;
 
@@ -10,8 +11,8 @@ var BOARD_SIZE = 9;
 var BOX_SIZE = 3;
 
 window.onload = function() {
-    setGame();
-    newGame(30);
+    prepareBoard();
+    newGame(10);
 
     // Delete later
     const newGameTempBtn = document.getElementById('temp'); 
@@ -39,10 +40,20 @@ window.onload = function() {
     const pauseButton = document.getElementById('pause-btn');
     pauseButton.addEventListener('click', function() {
         if (isGamePaused) {
-            resumeGame(pauseButton);
+            resumeGame();
         } else {
-            pauseGame(pauseButton)
+            pauseGame();
         }
+    });
+
+    // Open popup window
+    const popup = document.querySelector('.popup');
+    document.addEventListener('gameWon', function() {
+        pauseGame();
+        isGameOver = true;
+        popup.querySelector('.time-played').innerText = "Time played: " + document.getElementById("clock").innerText;
+        popup.classList.add("show");
+        deselectAll();
     });
 
     // Close popup window
@@ -53,12 +64,7 @@ window.onload = function() {
     });
 }
 
-function setGame() {
-    // Generate board
-    let sudoku = new Sudoku(40)
-    solution = sudoku.solution;
-    board = sudoku.board;
-
+function prepareBoard() {
     // Digits
     for (let i = 1; i <= 9; i++) {
         let number = document.createElement("div");
@@ -93,24 +99,10 @@ function newGame(removedDigits) {
     solution = sudoku.solution;
     board = sudoku.board;
     
-    deselectAll();
-
-    // Unpause - FIX
-    isGamePaused = false; // Reset the pause state
-    const pauseIcon = document.getElementById('pause-icon');
-    const playIcon = document.getElementById('play-icon');
-    pauseIcon.classList.remove('paused');
-    pauseIcon.classList.add('resumed');
-    playIcon.classList.remove('paused');
-    playIcon.classList.add('resumed');
-
-    // Set the game timer
-    resetTimer();
-    clearInterval(timePlayed); // Stop the previous timer
-    startTime = new Date().getTime(); // Reset the start time
-    timePlayed = setInterval(function() {
-        setTimer();
-    }, 1000);
+    deselectAll();  // Deselect selected elements
+    if(isGamePaused)
+        resumeGame(); // Unpause the game if ended paused
+    resetTimer(); // Set the game timer
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -125,16 +117,10 @@ function newGame(removedDigits) {
         }
     }
 
-    // Add event listener to check when digitsLeft equals zero
     digitsLeft = removedDigits;
-    const popup = document.querySelector('.popup');
-    document.addEventListener('gameWon', function() {
-        clearInterval(timePlayed); // Stop the clock
-        popup.querySelector('.time-played').innerText = "Time played: " + document.getElementById("clock").innerText;
-        popup.classList.add("show");
-        deselectAll();
-    });
 }
+
+// ------------------------------------ Tile and number logic --------------------------------
 
 function deselectAll() {
     if(numSelected != null) {
@@ -153,102 +139,99 @@ function selectNumber() {
     }
 
     if(tileSelected) {
-        if(tileSelected.classList.contains("start-tile")) {
-            return;
-        }
-
-        let coords = tileSelected.id.split(":");
-        let r = parseInt(coords[0]);
-        let c = parseInt(coords[1]);
-
-        if(tileSelected.innerText === this.id) {
-            // remove the same digit
-            board[r][c] = 0;
-            tileSelected.innerText = "";
-            digitsLeft++;
-        }
-        else {
-            // add new digit
-            if(tileSelected.innerText === "") {
-                digitsLeft--;
-            }
-    
-            tileSelected.innerText = this.id;
-            board[r][c] = parseInt(this.id);
-    
-    
-            // Check if digitsLeft equals zero
-            if(digitsLeft === 0) {
-                boardFilledUp();
-            }
-        }
+        actionChosen(this.id, tileSelected);
     }
     else {
-        if(numSelected != null) {
-            numSelected.classList.remove("number-selected");
-            if(numSelected == this) {
-                numSelected = null;
-                return;
-            }
-        }
-
-        numSelected = this;
-        numSelected.classList.add("number-selected");
+        selectNewDigit(this.id);
     }
 }
 
 function selectTile() {
-    if(isGamePaused) {
+    if(isGamePaused || this.classList.contains("start-tile")) {
         return;
     }
 
     if(numSelected) {
-        if(this.classList.contains("start-tile")) {
-            return;
-        }
-
-        let coords = this.id.split(":");
-        let r = parseInt(coords[0]);
-        let c = parseInt(coords[1]);
-
-        if(this.innerText === numSelected.id) {
-            // remove the same digit
-            board[r][c] = 0;
-            this.innerText = "";
-            digitsLeft++;
-        }
-        else {
-            // add new digit
-            if(this.innerText === "") {
-                digitsLeft--;
-            }
-    
-            this.innerText = numSelected.id;
-            board[r][c] = parseInt(numSelected.id);
-    
-            // Check if digitsLeft equals zero
-            if(digitsLeft === 0) {
-                boardFilledUp();
-            }
-        }
+        actionChosen(numSelected.id, this);
     } else {
-        if(this.classList.contains("start-tile")) {
-            return;
-        }
-
-        if(tileSelected != null) {
-            tileSelected.classList.remove("tile-selected");
-            if(tileSelected == this) {
-                tileSelected = null;
-                return;
-            }
-        }
-
-        tileSelected = this;
-        tileSelected.classList.add("tile-selected");
+        selectNewTile(this);
     }
 }
 
+document.addEventListener('keydown', function(event) {
+    if(isGamePaused) {
+        return;
+    }
+
+    let digit = parseInt(event.key);
+    if (digit >= 1 && digit <= 9) {
+        if (tileSelected && !numSelected) {
+            actionChosen(digit.toString(), tileSelected);
+        } else if (!tileSelected) {
+            selectNewDigit(digit);
+        }
+    }
+});
+
+function selectNewTile(tile) {
+    if(tileSelected != null) {
+        tileSelected.classList.remove("tile-selected");
+        if(tileSelected === tile) {
+            tileSelected = null;
+            return;
+        }
+    }
+
+    tileSelected = tile;
+    tileSelected.classList.add("tile-selected");
+}
+
+function selectNewDigit(digit) {
+    if(numSelected != null) {
+        numSelected.classList.remove("number-selected");
+        if(numSelected.innerText === digit.toString()) {
+            numSelected = null;
+            return;
+        }
+    }
+    numSelected = document.getElementById(digit);
+    numSelected.classList.add('number-selected');   
+}
+
+function removeSameDigit(row, col, number, tile) {
+    board[row][col] = 0;
+    tile.innerText = "";
+    digitsLeft++;
+}
+
+function addNewDigit(row, col, number, tile) {
+    if(tile.innerText === "") {
+        digitsLeft--;
+    }
+
+    tile.innerText = number;
+    board[row][col] = parseInt(number);
+
+    // Check if digitsLeft equals zero
+    if(digitsLeft === 0) {
+        boardFilledUp();
+    }
+}
+
+function actionChosen(number, tile) {
+    let coords = tile.id.split(":");
+    let r = parseInt(coords[0]);
+    let c = parseInt(coords[1]);
+    if(number === tile.innerText) {
+        removeSameDigit(r, c, number, tile);
+    }
+    else {
+        addNewDigit(r, c, number, tile);
+    }
+}
+
+
+// Maybe fix the comparison?
 function boardFilledUp() {
     const solutionNumbers = solution.map(row => row.split('').map(Number));
     for (let i = 0; i < BOARD_SIZE; i++) {
@@ -259,42 +242,51 @@ function boardFilledUp() {
             }
         }
     }
+
     document.dispatchEvent(new Event('gameWon'));
 }
 
-// Timer logic
+// -------------------------------------------------------------------------------------------
+
+// ------------------------------------------- Timer logic -----------------------------------
+function setTimer() {
+    var now = new Date().getTime();
+    var distance = now - startTime;
+    
+    // Time calculations for days, hours, minutes and seconds
+    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+  
+    if(seconds < 10)
+        seconds = "0" + seconds;
+    if(minutes < 10)
+        minutes = "0" + minutes;
+    
+    // Output the result in an element with id="demo"
+    if(hours > 0) {
+        document.getElementById("clock").innerHTML = hours + ":" + minutes + ":" + seconds;
+    } else {
+        document.getElementById("clock").innerHTML = minutes + ":" + seconds;
+  }
+}
+
 function resetTimer() {
+    isGameOver = false;
     document.getElementById("clock").innerHTML = "00:00";
-    clearInterval(timePlayed);
-    startTime = new Date().getTime();
+    clearInterval(timePlayed); // Stop the previous timer
+    startTime = new Date().getTime(); // Reset the start time
     timePlayed = setInterval(function() {
         setTimer();
     }, 1000);
 }
 
-// Game pausing logic
-function pauseGame(pauseButton) {
-    const pauseIcon = document.getElementById('pause-icon');
-    const playIcon = document.getElementById('play-icon');
-    pauseIcon.classList.add('paused');
-    pauseIcon.classList.remove('resumed');
-    playIcon.classList.add('paused');
-    playIcon.classList.remove('resumed');
-    
-    isGamePaused = true;
+function pauseTimer() {
     clearInterval(timePlayed); // Stop the timer
     pauseTime = new Date().getTime(); // Record the pause time
 }
 
-function resumeGame(pauseButton) {
-    const pauseIcon = document.getElementById('pause-icon');
-    const playIcon = document.getElementById('play-icon');
-    pauseIcon.classList.remove('paused');
-    pauseIcon.classList.add('resumed');
-    playIcon.classList.remove('paused');
-    playIcon.classList.add('resumed');
-
-    isGamePaused = false;
+function resumeTimer() {
     var now = new Date().getTime();
     var pauseDuration = now - pauseTime; // Calculate the pause duration
     startTime += pauseDuration; // Update the start time
@@ -302,6 +294,47 @@ function resumeGame(pauseButton) {
         setTimer();
     }, 1000); // Resume the timer
 }
+
+// -------------------------------------------------------------------------------------------
+
+// --------------------------------- Game pausing logic --------------------------------------
+
+function pauseGameIcons() {
+    const pauseIcon = document.getElementById('pause-icon');
+    const playIcon = document.getElementById('play-icon');
+    pauseIcon.classList.add('paused');
+    pauseIcon.classList.remove('resumed');
+    playIcon.classList.add('paused');
+    playIcon.classList.remove('resumed');
+}
+
+function resumeGameIcons() {
+    const pauseIcon = document.getElementById('pause-icon');
+    const playIcon = document.getElementById('play-icon');
+    pauseIcon.classList.remove('paused');
+    pauseIcon.classList.add('resumed');
+    playIcon.classList.remove('paused');
+    playIcon.classList.add('resumed');
+}
+
+function pauseGame() {
+    if(isGameOver) {
+        return;
+    }
+    isGamePaused = true;
+    pauseTimer();
+    pauseGameIcons();
+}
+
+function resumeGame() {
+    if(isGameOver) {
+        return;
+    }
+    isGamePaused = false;
+    resumeTimer();
+    resumeGameIcons();
+}
+// -------------------------------------------------------------------------------------------
 
 class Sudoku {
     constructor(removedDigits) {
@@ -495,26 +528,4 @@ class Sudoku {
         return solutions == 1;
     }
     
-}
-
-function setTimer() {
-    var now = new Date().getTime();
-    var distance = now - startTime;
-    
-    // Time calculations for days, hours, minutes and seconds
-    var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-    var seconds = Math.floor((distance % (1000 * 60)) / 1000);
-  
-    if(seconds < 10)
-        seconds = "0" + seconds;
-    if(minutes < 10)
-        minutes = "0" + minutes;
-    
-    // Output the result in an element with id="demo"
-    if(hours > 0) {
-        document.getElementById("clock").innerHTML = hours + ":" + minutes + ":" + seconds;
-    } else {
-        document.getElementById("clock").innerHTML = minutes + ":" + seconds;
-  }
 }
