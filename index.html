@@ -19,8 +19,14 @@
                 <div id="digits"></div>
             </div>
             <div id="options">
-                <div id="clock-box">
-                    <p id="clock" class="prevent-text-select">00:00</p>
+                <div id="clock-container" class="prevent-text-select">
+                    <div id="clock-box">
+                        <span id="clock">00:00</span>
+                    </div>
+                    <button id="pause-btn" class="resumed" aria-label="Pause game">
+                        <img id="pause-icon" src="images/pause.png" alt="Pause" id="pause-icon">
+                        <img class="resumed" id="play-icon" src="images/play.png" alt="Resume" id="play-icon">
+                    </button>
                 </div>
                 <h2>Game Options</h2>
                 <button class="new-game-btn" id="temp">Temp</button>

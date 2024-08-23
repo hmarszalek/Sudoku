@@ -30,22 +30,62 @@ body {
     text-align: center;
 }
 
-#clock-box {
-    width: 125px;
-    height: 50px;
-    padding: 2px 20px;
-    border: solid, black;
-    border-radius: 5px;
-    margin: 10px auto;
+#clock-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    align-items: center;
 }
 
-#clock {
+#clock-box {
+    border: solid, black;
+    border-radius: 5px;
     display: inline-block;
-    margin: 0 auto;
-    font-size: 30px;
-    text-align: center;
-    line-height: 50px;
+    margin: 0 5px;
+    padding: 5px;
+    width: 110px
 }
+  
+#clock {
+    font-size: 24px
+}
+  
+#pause-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+  
+#pause-icon {
+    width: 35px;
+    height: 35px;
+}
+
+#play-icon {
+    width: 35px;
+    height: 35px;
+}
+
+#pause-icon.paused {
+    display: none;
+}
+
+#pause-icon.resumed {
+    display: block;
+}
+
+#play-icon.paused {
+    display: block;
+}
+
+#play-icon.resumed {
+    display: none;
+}
+  
 
 .new-game-btn {
     width: 150px;

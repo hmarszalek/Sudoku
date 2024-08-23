@@ -2,31 +2,47 @@ var numSelected = null;
 var tileSelected = null;
 var digitsLeft;
 var startTime;
+var isGamePaused = false;
+var timePlayed;
+var pauseTime = 0;
 
 var BOARD_SIZE = 9;
 var BOX_SIZE = 3;
 
 window.onload = function() {
     setGame();
+    newGame(30);
 
     // Delete later
     const newGameTempBtn = document.getElementById('temp'); 
     newGameTempBtn.addEventListener('click', function() {
-        newBoard(1);
+        newGame(1);
     });
 
 
+    // New game buttons
     const newGameEasyBtn = document.getElementById('easy');
     const newGameMediumBtn = document.getElementById('medium');
     const newGameHardBtn = document.getElementById('hard');
     newGameEasyBtn.addEventListener('click', function() {
-        newBoard(Math.floor(Math.random() * 8 + 1) + 35);
+        newGame(Math.floor(Math.random() * 8 + 1) + 35);
     });
     newGameMediumBtn.addEventListener('click', function() {
-        newBoard(Math.floor(Math.random() * 8 + 1) + 45);
+        newGame(Math.floor(Math.random() * 8 + 1) + 45);
     });
     newGameHardBtn.addEventListener('click', function() {
-        newBoard(Math.floor(Math.random() * 5 + 1) + 55);
+        newGame(Math.floor(Math.random() * 5 + 1) + 45);
+        // newGame(Math.floor(Math.random() * 5 + 1) + 55);
+    });
+
+    // Pause game
+    const pauseButton = document.getElementById('pause-btn');
+    pauseButton.addEventListener('click', function() {
+        if (isGamePaused) {
+            resumeGame(pauseButton);
+        } else {
+            pauseGame(pauseButton)
+        }
     });
 
     // Close popup window
@@ -71,7 +87,7 @@ function setGame() {
     }
 }
 
-function newBoard(removedDigits) {
+function newGame(removedDigits) {
     // Generate board
     let sudoku = new Sudoku(removedDigits)
     solution = sudoku.solution;
@@ -79,12 +95,22 @@ function newBoard(removedDigits) {
     
     deselectAll();
 
+    // Unpause - FIX
+    isGamePaused = false; // Reset the pause state
+    const pauseIcon = document.getElementById('pause-icon');
+    const playIcon = document.getElementById('play-icon');
+    pauseIcon.classList.remove('paused');
+    pauseIcon.classList.add('resumed');
+    playIcon.classList.remove('paused');
+    playIcon.classList.add('resumed');
+
     // Set the game timer
-    startTime = new Date().getTime();
-    var timePlayed = setInterval(function() {
+    resetTimer();
+    clearInterval(timePlayed); // Stop the previous timer
+    startTime = new Date().getTime(); // Reset the start time
+    timePlayed = setInterval(function() {
         setTimer();
-    }
-    );
+    }, 1000);
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -122,6 +148,10 @@ function deselectAll() {
 }
 
 function selectNumber() {
+    if(isGamePaused) {
+        return;
+    }
+
     if(tileSelected) {
         if(tileSelected.classList.contains("start-tile")) {
             return;
@@ -168,6 +198,10 @@ function selectNumber() {
 }
 
 function selectTile() {
+    if(isGamePaused) {
+        return;
+    }
+
     if(numSelected) {
         if(this.classList.contains("start-tile")) {
             return;
@@ -226,6 +260,47 @@ function boardFilledUp() {
         }
     }
     document.dispatchEvent(new Event('gameWon'));
+}
+
+// Timer logic
+function resetTimer() {
+    document.getElementById("clock").innerHTML = "00:00";
+    clearInterval(timePlayed);
+    startTime = new Date().getTime();
+    timePlayed = setInterval(function() {
+        setTimer();
+    }, 1000);
+}
+
+// Game pausing logic
+function pauseGame(pauseButton) {
+    const pauseIcon = document.getElementById('pause-icon');
+    const playIcon = document.getElementById('play-icon');
+    pauseIcon.classList.add('paused');
+    pauseIcon.classList.remove('resumed');
+    playIcon.classList.add('paused');
+    playIcon.classList.remove('resumed');
+    
+    isGamePaused = true;
+    clearInterval(timePlayed); // Stop the timer
+    pauseTime = new Date().getTime(); // Record the pause time
+}
+
+function resumeGame(pauseButton) {
+    const pauseIcon = document.getElementById('pause-icon');
+    const playIcon = document.getElementById('play-icon');
+    pauseIcon.classList.remove('paused');
+    pauseIcon.classList.add('resumed');
+    playIcon.classList.remove('paused');
+    playIcon.classList.add('resumed');
+
+    isGamePaused = false;
+    var now = new Date().getTime();
+    var pauseDuration = now - pauseTime; // Calculate the pause duration
+    startTime += pauseDuration; // Update the start time
+    timePlayed = setInterval(function() {
+        setTimer();
+    }, 1000); // Resume the timer
 }
 
 class Sudoku {
