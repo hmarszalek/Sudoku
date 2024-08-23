@@ -1,6 +1,7 @@
 body {
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
+    touch-action: manipulation;
 }
 
 .prevent-text-select {
@@ -30,12 +31,6 @@ body {
     float: left;
     text-align: center;
 }
-
-#menu-icon, #close-icon, #pause-icon, #play-icon, #options-toggle {
-    display: none;
-}
-
-
 
 #clock-container {
     display: flex;
@@ -214,22 +209,32 @@ body {
     display: block;
 }
 
+#menu-icon, #options-toggle {
+    display: none;
+}
+
 /* Mobile-specific styles */
 @media only screen and (max-width: 768px) {
-    #menu-icon, #close-icon, #pause-icon, #play-icon, #options-toggle {
+    #play-icon.paused {
+        display: none;
+    }
+    #pause-icon {
+        display: none;
+    }
+    #menu-icon, #close-icon, #options-toggle {
         display: block;
     }
 
     /* Hide the options menu by default */
     #options {
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 100%;
-      height: 100vh;
-      background-color: #fff;
-      padding: 20px;
-      display: none; /* hide the menu initially */
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100%;
+        height: 100vh;
+        background-color: #fff;
+        padding: 20px;
+        display: none; /* hide the menu initially */
     }
 
     /* Add a toggle button to open/close the options menu */
@@ -253,41 +258,12 @@ body {
         height: 35px;
     }
 
-    #close-icon {
-        width: 35px;
-        height: 35px;
-    }
-
     #temp {
         display: none;
     }
-
-    #board {
-        width: 300px;
-        height: 300px;
-        margin: 10px auto;
-    }
-    
-    .tile {
-        width: 32px;
-        height: 32px;
-        font-size: 16px;
-    }
-    
-    #digits {
-        width: 300px;
-        height: 40px;
-        margin: 0 auto;
-    }
-    
-    .number {
-        width: 28px;
-        height: 28px;
-        font-size: 16px;
-    }
 }
 
-/* Mobile-specific styles for small screens (480px - 768px) */
+/* Mobile-specific styles for medium screens (480px - 768px) */
 @media only screen and (min-width: 480px) and (max-width: 768px) {
     #board {
       width: 450px;
@@ -312,32 +288,39 @@ body {
       height: 45px;
       font-size: 18px;
     }
-  
-    /* #clock-container {
-      margin-top: 25px;
-    }
-  
-    #clock-box {
-      width: 120px;
-    }
-  
-    #clock {
-      font-size: 26px;
-    }
-  
-    #pause-btn {
-      width: 40px;
-      height: 40px;
-    }
-  
-    #pause-icon, #play-icon {
-      width: 40px;
-      height: 40px;
-    }
-  
+
     .new-game-btn {
-      width: 180px;
-      height: 55px;
-      font-size: 18px;
-    } */
-  }
+        width: 400px;
+    }
+}
+
+/* Mobile-specific styles for tiny screens (below 480px) */
+@media only screen and (max-width: 480px) {
+    #board {
+        width: 300px;
+        height: 300px;
+        margin: 10px auto;
+    }
+    
+    .tile {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    
+    #digits {
+        width: 300px;
+        height: 40px;
+        margin: 0 auto;
+    }
+    
+    .number {
+        width: 28px;
+        height: 28px;
+        font-size: 16px;
+    }
+
+    .new-game-btn {
+        width: 70%;
+    }
+}

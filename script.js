@@ -7,6 +7,8 @@ var isGameOver = true;
 var timePlayed;
 var pauseTime = 0;
 
+const isMobile = window.screen.width <= 768;
+
 var BOARD_SIZE = 9;
 var BOX_SIZE = 3;
 
@@ -39,6 +41,11 @@ window.onload = function() {
     // Toggle menu button
     document.getElementById('options-toggle').addEventListener('click', function() {
         document.getElementById('options').classList.toggle('open');
+        if (isGamePaused) {
+            resumeGame();
+        } else {
+            pauseGame();
+        }
     });
 
     // Pause game
@@ -106,6 +113,10 @@ function newGame(removedDigits) {
     
     deselectAll();  // Deselect selected elements
     resetTimer(); // Set the game timer
+
+    if(isMobile) {
+        pauseGame();
+    }
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
