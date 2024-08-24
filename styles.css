@@ -2,6 +2,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
     touch-action: manipulation;
+    padding-bottom: 50px;
 }
 
 .prevent-text-select {
@@ -89,6 +90,39 @@ body {
 }
   
 
+.special-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    opacity: 70%;
+}
+
+.special-button img {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 5px;
+  }
+
+  .special-button span {
+    font-size: 14px;
+  }
+
+  #special {
+    width: 90%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+  }
+  
+.special-button.number-selected {
+    opacity: 100%;
+}
+
 .new-game-btn {
     width: 150px;
     height: 50px;
@@ -151,6 +185,7 @@ body {
     grid-gap: 0;
 }
 
+/* change number to digit?? */
 .number {
     width: 45px;
     height: 45px;
@@ -165,8 +200,13 @@ body {
     align-items: center;
 }
 
-.number-selected {
+.number.number-selected {
     background-color: gray;
+}
+
+.number-used {
+    background-color: #a8a8a8; /* or any other color you prefer */
+    cursor: not-allowed;
 }
 
 .horizontal-line {

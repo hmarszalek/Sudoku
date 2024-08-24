@@ -6,6 +6,7 @@ var isGamePaused = false;
 var isGameOver = true;
 var timePlayed;
 var pauseTime = 0;
+let digitUsage = new Array(10);
 
 const isMobile = window.screen.width <= 768;
 
@@ -29,33 +30,37 @@ window.onload = function() {
     const newGameHardBtn = document.getElementById('hard');
     newGameEasyBtn.addEventListener('click', function() {
         newGame(Math.floor(Math.random() * 8 + 1) + 35);
+        if(isMobile) {
+            toggleMenu();
+        }
     });
     newGameMediumBtn.addEventListener('click', function() {
         newGame(Math.floor(Math.random() * 8 + 1) + 45);
+        if(isMobile) {
+            toggleMenu();
+        }
     });
     newGameHardBtn.addEventListener('click', function() {
         newGame(Math.floor(Math.random() * 5 + 1) + 45);
         // newGame(Math.floor(Math.random() * 5 + 1) + 55);
+        if(isMobile) {
+            toggleMenu();
+        }
     });
+
+    // Special buttons
+    const eraseButton = document.getElementById('erase-btn');
+    eraseButton.addEventListener("click", function() { selectNumber('erase-btn'); });
 
     // Toggle menu button
     document.getElementById('options-toggle').addEventListener('click', function() {
-        document.getElementById('options').classList.toggle('open');
-        if (isGamePaused) {
-            resumeGame();
-        } else {
-            pauseGame();
-        }
+        toggleMenu();
     });
 
     // Pause game
     const pauseButton = document.getElementById('pause-btn');
     pauseButton.addEventListener('click', function() {
-        if (isGamePaused) {
-            resumeGame();
-        } else {
-            pauseGame();
-        }
+        pauseResume();
     });
 
     // Open popup window
@@ -76,13 +81,26 @@ window.onload = function() {
     });
 }
 
+function toggleMenu() {
+    document.getElementById('options').classList.toggle('open');
+    pauseResume();
+}
+
+function pauseResume() {
+    if (isGamePaused) {
+        resumeGame();
+    } else {
+        pauseGame();
+    }
+}
+
 function prepareBoard() {
     // Digits
     for (let i = 1; i <= 9; i++) {
         let number = document.createElement("div");
         number.id = i
         number.innerText = i;
-        number.addEventListener("click", selectNumber);
+        number.addEventListener("click", function() { selectNumber(i.toString()); });
         number.classList.add("number", "prevent-text-select");
         document.getElementById("digits").appendChild(number);
     }
@@ -106,6 +124,10 @@ function prepareBoard() {
 }
 
 function newGame(removedDigits) {
+    // Digit Usage
+    digitUsage.fill(9);
+    digitUsage[0] = 1000;
+
     // Generate board
     let sudoku = new Sudoku(removedDigits)
     solution = sudoku.solution;
@@ -117,6 +139,9 @@ function newGame(removedDigits) {
     if(isMobile) {
         pauseGame();
     }
+
+    console.log(digitUsage);
+    updateDigitUsageClasses();
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -147,16 +172,17 @@ function deselectAll() {
     }
 }
 
-function selectNumber() {
-    if(isGamePaused) {
+function selectNumber(numberId) {
+    // console.log("selected number");
+    if(isGamePaused || digitUsage[parseInt(numberId)] === 9) {
         return;
     }
 
     if(tileSelected) {
-        actionChosen(this.id, tileSelected);
+        actionChosen(numberId, tileSelected);
     }
     else {
-        selectNewDigit(this.id);
+        selectNewDigit(numberId);
     }
 }
 
@@ -164,6 +190,7 @@ function selectTile() {
     if(isGamePaused || this.classList.contains("start-tile")) {
         return;
     }
+
     if(numSelected) {
         actionChosen(numSelected.id, this);
     } else {
@@ -171,17 +198,13 @@ function selectTile() {
     }
 }
 
+// Keyboard
 document.addEventListener('keydown', function(event) {
     if(isGamePaused) {
         return;
     }
-    let digit = parseInt(event.key);
-    if (digit >= 1 && digit <= 9) {
-        if (tileSelected && !numSelected) {
-            actionChosen(digit.toString(), tileSelected);
-        } else if (!tileSelected) {
-            selectNewDigit(digit);
-        }
+    if (parseInt(event.key) >= 1 && parseInt(event.key) <= 9) {
+        selectNumber(event.key);
     }
 });
 
@@ -197,31 +220,44 @@ function selectNewTile(tile) {
     tileSelected.classList.add("tile-selected");
 }
 
-function selectNewDigit(digit) {
+function selectNewDigit(numberId) {
+    // console.log("select new digit");
+
     if(numSelected != null) {
         numSelected.classList.remove("number-selected");
-        if(numSelected.innerText === digit.toString()) {
+        if(numSelected.id === numberId) {
             numSelected = null;
             return;
         }
     }
-    numSelected = document.getElementById(digit);
+    numSelected = document.getElementById(numberId);
     numSelected.classList.add('number-selected');   
 }
 
 function removeSameDigit(row, col, number, tile) {
+    // console.log("remove same digit");
     board[row][col] = 0;
     tile.innerText = "";
     digitsLeft++;
+    digitUsage[number]--;
 }
 
 function addNewDigit(row, col, number, tile) {
-    if(tile.innerText === "") {
+    // console.log("add new digit");
+    if(board[row][col] === 0) {
         digitsLeft--;
+    } else {
+        digitUsage[board[row][col]]--;
     }
 
-    tile.innerText = number;
-    board[row][col] = parseInt(number);
+    if(number === 0) {
+        tile.innerText = "";
+    } else {
+        tile.innerText = number.toString();
+        digitUsage[number]++;
+    }
+
+    board[row][col] = number;
 
     // Check if digitsLeft equals zero
     if(digitsLeft === 0) {
@@ -229,18 +265,41 @@ function addNewDigit(row, col, number, tile) {
     }
 }
 
-function actionChosen(number, tile) {
+function actionChosen(numberId, tile) {
+    // console.log("action chosen");
     let coords = tile.id.split(":");
     let r = parseInt(coords[0]);
     let c = parseInt(coords[1]);
-    if(number === tile.innerText) {
-        removeSameDigit(r, c, number, tile);
+
+    if(numberId === "erase-btn") {
+        numberId = "0";
+    }
+
+    if(numberId === tile.innerText) {
+        removeSameDigit(r, c, parseInt(numberId), tile);
     }
     else {
-        addNewDigit(r, c, number, tile);
+        addNewDigit(r, c, parseInt(numberId), tile);
     }
+    updateDigitUsageClasses();
+    console.log(digitUsage);
 }
 
+// Segregate used up digits
+function updateDigitUsageClasses() {
+    for (let i = 1; i <= 9; i++) {
+        const numberElement = document.getElementById(i);
+        if (digitUsage[i] === 9) {
+            numberElement.classList.add('number-used');
+            numberElement.classList.remove('number-selected');
+            if(numSelected != null && numSelected.id === i.toString()) {
+                numSelected = null;
+            }
+        } else {
+            numberElement.classList.remove('number-used');
+        }
+    }
+}
 
 // Maybe fix the comparison?
 function boardFilledUp() {
@@ -349,7 +408,7 @@ function resumeGame() {
     resumeTimer();
     resumeGameIcons();
 }
-// -------------------------------------------------------------------------------------------
+// ------------------------------------- Sudoku Class ----------------------------------------
 
 class Sudoku {
     constructor(removedDigits) {
@@ -477,6 +536,7 @@ class Sudoku {
                 let temp = this.board[row][col];
                 this.board[row][col] = 0;
                 if (this.isUniquelySolvable(this.board)) {
+                    digitUsage[temp]--;
                     count--;
                 } else {
                     this.board[row][col] = temp;
