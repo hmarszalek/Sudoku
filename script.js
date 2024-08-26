@@ -6,6 +6,7 @@ var isGamePaused = false;
 var isGameOver = true;
 var timePlayed;
 var pauseTime = 0;
+var isSolutionVisible = false;
 let digitUsage = new Array(10);
 
 const isMobile = window.screen.width <= 768;
@@ -49,8 +50,29 @@ window.onload = function() {
     });
 
     // Special buttons
+
+    // Erase button
     const eraseButton = document.getElementById('erase-btn');
     eraseButton.addEventListener("click", function() { selectNumber('erase-btn'); });
+
+    // Solution button
+    const solutionBtn = document.getElementById('solution-btn');
+    const boardArray = document.getElementById('board');
+    const solutionArray = document.getElementById('solution');
+    solutionBtn.addEventListener('click', () => {
+        if (!isSolutionVisible) {
+          boardArray.style.display = 'none';
+          solutionArray.style.display = 'grid';
+          solutionBtn.classList.add("special-clicked");
+          isSolutionVisible = true;
+        } else {
+          boardArray.style.display = 'grid';
+          solutionArray.style.display = 'none';
+          solutionBtn.classList.remove("special-clicked");
+          isSolutionVisible = false;
+        }
+      });
+
 
     // Toggle menu button
     document.getElementById('options-toggle').addEventListener('click', function() {
@@ -121,6 +143,23 @@ function prepareBoard() {
             document.getElementById("board").appendChild(tile);
         }
     }
+
+    // solution
+    for(let r = 0; r < BOARD_SIZE; r++) {
+        for(let c = 0; c < BOARD_SIZE; c++) {
+            let tile = document.createElement("div");
+            tile.id = "s" + r.toString() + ":" + c.toString();
+            if(r == 2 || r == 5) {
+                tile.classList.add("horizontal-line");
+            }
+            if(c == 2 || c == 5) {
+                tile.classList.add("vertical-line");
+            }
+            // tile.addEventListener("click", selectTile);
+            tile.classList.add("tile", "prevent-text-select");
+            document.getElementById("solution").appendChild(tile);
+        }
+    }
 }
 
 function newGame(removedDigits) {
@@ -153,6 +192,14 @@ function newGame(removedDigits) {
                 tile.innerText = board[r][c];
                 tile.classList.add("start-tile");
             }
+        }
+    }
+
+    // Solution
+    for(let r = 0; r < BOARD_SIZE; r++) {
+        for(let c = 0; c < BOARD_SIZE; c++) {
+            let tile = document.getElementById("s" + r.toString() + ":" + c.toString());
+            tile.innerText = solution[r][c];
         }
     }
 
@@ -367,6 +414,15 @@ function resumeTimer() {
         setTimer();
     }, 1000); // Resume the timer
 }
+
+// Pause the timer when outside of the page
+document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      pauseTimer(); // Stop the timer when the page is not active
+    } else {
+      resumeTimer(); // Resume the timer when the page is active again
+    }
+  });
 
 // -------------------------------------------------------------------------------------------
 

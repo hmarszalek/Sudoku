@@ -14,9 +14,17 @@
 <body>
     <div class="container">
         <div id="sudoku-board" class="prevent-text-select">
-            <h1>Sudoku</h1>
+            <div id="title">
+                <h1>Sudoku</h1>
+                <button id="options-toggle" aria-label="Open options menu">
+                    <img id="menu-icon" src="images/menu.png" alt="Menu">
+                </button>
+            </div>
+
             <div id="board"></div>
+            <div id="solution"></div>
             <br>
+            
             <div id="special">
                 <button class="special-button" id="solution-btn">
                     <img class="icon" id="solution-icon" src="images/flag.png">
@@ -36,13 +44,12 @@
                 </button>
             </div>
             <br>
+
             <div id="digits"></div>
             <br>
         </div>
 
-        <button id="options-toggle" aria-label="Open options menu">
-            <img id="menu-icon" src="images/menu.png" alt="Menu">
-        </button>
+        
 
         <div id="options" class="prevent-text-select open">
             <div id="clock-container" class="prevent-text-select">
@@ -61,6 +68,7 @@
             <button class="new-game-btn" id="temp">Temp</button>
         </div>
     </div>
+
     <div id="myPopup" class="popup">
         <div class="popup-content">
             <span class="close">&times;</span>
