@@ -8,6 +8,10 @@ var timePlayed;
 var pauseTime = 0;
 var isSolutionVisible = false;
 let digitUsage = new Array(10);
+var unfilledTiles = [];
+var solution;
+var board;
+var hintCnt;
 
 const isMobile = window.screen.width <= 768;
 
@@ -49,7 +53,7 @@ window.onload = function() {
         }
     });
 
-    // Special buttons
+    // --- Special buttons ---
 
     // Erase button
     const eraseButton = document.getElementById('erase-btn');
@@ -60,18 +64,46 @@ window.onload = function() {
     const boardArray = document.getElementById('board');
     const solutionArray = document.getElementById('solution');
     solutionBtn.addEventListener('click', () => {
-        if (!isSolutionVisible) {
-          boardArray.style.display = 'none';
-          solutionArray.style.display = 'grid';
-          solutionBtn.classList.add("special-clicked");
-          isSolutionVisible = true;
-        } else {
-          boardArray.style.display = 'grid';
-          solutionArray.style.display = 'none';
-          solutionBtn.classList.remove("special-clicked");
-          isSolutionVisible = false;
+        if(isGameOver || isGamePaused) {
+            return;
         }
-      });
+        if (!isSolutionVisible) {
+            boardArray.style.display = 'none';
+            solutionArray.style.display = 'grid';
+            solutionBtn.classList.add("special-clicked");
+            isSolutionVisible = true;
+        } else {
+            boardArray.style.display = 'grid';
+            solutionArray.style.display = 'none';
+            solutionBtn.classList.remove("special-clicked");
+            isSolutionVisible = false;
+        }
+    });
+
+    // Hint button
+    const hintBtn = document.getElementById('hint-btn');
+    hintBtn.addEventListener('click', () => {
+        if (isGameOver || isGamePaused) {
+            return;
+        }
+
+        if (tileSelected !== null) {
+            hintTile = tileSelected;
+        } else {
+            hintTile = unfilledTiles[Math.floor(Math.random() * unfilledTiles.length)];
+        }
+        
+        let coords = hintTile.id.split(":");
+        let r = parseInt(coords[0]);
+        let c = parseInt(coords[1]);
+        
+        if(hintTile.innerText === solution[r][c]) {
+            return;
+        }
+
+        hintCnt++;
+        actionChosen(solution[r][c].toString(), hintTile);
+    });
 
 
     // Toggle menu button
@@ -91,6 +123,7 @@ window.onload = function() {
         pauseGame();
         isGameOver = true;
         popup.querySelector('.time-played').innerText = "Time played: " + document.getElementById("clock").innerText;
+        popup.querySelector('.hint-count').innerText = "You used " + hintCnt + " hints.";
         popup.classList.add("show");
         deselectAll();
     });
@@ -155,7 +188,6 @@ function prepareBoard() {
             if(c == 2 || c == 5) {
                 tile.classList.add("vertical-line");
             }
-            // tile.addEventListener("click", selectTile);
             tile.classList.add("tile", "prevent-text-select");
             document.getElementById("solution").appendChild(tile);
         }
@@ -174,6 +206,7 @@ function newGame(removedDigits) {
     
     deselectAll();  // Deselect selected elements
     resetTimer(); // Set the game timer
+    hintCnt = 0;
 
     if(isMobile) {
         pauseGame();
@@ -181,6 +214,20 @@ function newGame(removedDigits) {
 
     console.log(digitUsage);
     updateDigitUsageClasses();
+
+    // Unfilled tiles
+    tempUnfilled = [];
+    for(let r = 0; r < BOARD_SIZE; r++) {
+        for(let c = 0; c < BOARD_SIZE; c++) {
+            let tile = board[r][c];
+            if(board[r][c] === 0) {
+                tempUnfilled.push(r + ", " + c);
+                unfilledTiles.push(document.getElementById(r.toString() + ":" + c.toString()));
+            }
+        }
+    }
+
+    console.log(tempUnfilled);
 
     // Board
     for(let r = 0; r < BOARD_SIZE; r++) {
@@ -283,13 +330,24 @@ function selectNewDigit(numberId) {
 
 function removeSameDigit(row, col, number, tile) {
     // console.log("remove same digit");
-    board[row][col] = 0;
-    tile.innerText = "";
-    digitsLeft++;
-    digitUsage[number]--;
+    if(number !== 0) {
+        board[row][col] = 0;
+        tile.innerText = "";
+        digitsLeft++;
+        digitUsage[number]--;
+        
+        if(unfilledTiles.indexOf(tile) === -1) {
+            unfilledTiles.push(tile);
+        }
+    }
 }
 
 function addNewDigit(row, col, number, tile) {
+    if(number === 0) {
+        removeSameDigit(row, col, board[row][col], tile);
+        return;
+    }
+
     // console.log("add new digit");
     if(board[row][col] === 0) {
         digitsLeft--;
@@ -297,14 +355,15 @@ function addNewDigit(row, col, number, tile) {
         digitUsage[board[row][col]]--;
     }
 
-    if(number === 0) {
-        tile.innerText = "";
-    } else {
-        tile.innerText = number.toString();
-        digitUsage[number]++;
-    }
-
+    tile.innerText = number.toString();
+    digitUsage[number]++;
     board[row][col] = number;
+
+    if(number.toString() === solution[row][col]) {
+        unfilledTiles.splice(unfilledTiles.indexOf(tile), 1);
+    } else if(unfilledTiles.indexOf(tile) === -1) {
+        unfilledTiles.push(tile);
+    }
 
     // Check if digitsLeft equals zero
     if(digitsLeft === 0) {
@@ -330,6 +389,7 @@ function actionChosen(numberId, tile) {
     }
     updateDigitUsageClasses();
     console.log(digitUsage);
+    console.log(unfilledTiles.length);
 }
 
 // Segregate used up digits
@@ -418,9 +478,13 @@ function resumeTimer() {
 // Pause the timer when outside of the page
 document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden') {
-      pauseTimer(); // Stop the timer when the page is not active
+        if(!isGamePaused && !isGameOver) {
+            pauseTimer();
+        }
     } else {
-      resumeTimer(); // Resume the timer when the page is active again
+        if(!isGamePaused &&!isGameOver) {
+            resumeTimer();
+        }
     }
   });
 
