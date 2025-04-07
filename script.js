@@ -22,11 +22,11 @@ window.onload = function() {
     prepareBoard();
     newGame(10);
 
-    // Delete later
-    const newGameTempBtn = document.getElementById('temp'); 
-    newGameTempBtn.addEventListener('click', function() {
-        newGame(1);
-    });
+    // // Delete later
+    // const newGameTempBtn = document.getElementById('temp'); 
+    // newGameTempBtn.addEventListener('click', function() {
+    //     newGame(1);
+    // });
 
 
     // New game buttons
